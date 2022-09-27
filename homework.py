@@ -93,7 +93,7 @@ def get_api_answer(url, current_timestamp):
 
 
 def extracted_from_parse_status(arg0, arg1):
-    """Функция проверки статуса"""
+    """Функция проверки статуса."""
     code_api_msg = f'{arg0}{arg1}'
     logger.error(code_api_msg)
     raise UndocumentedStatusError(code_api_msg)
