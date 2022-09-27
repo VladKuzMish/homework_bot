@@ -58,8 +58,7 @@ class RequestExceptionError(Exception):
 
 
 def send_message(bot, message):
-    """Функция для отправки сообщения в Телеграм"""
-
+    """Функция для отправки сообщения в Телеграм."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info(
@@ -71,7 +70,6 @@ def send_message(bot, message):
 
 def get_api_answer(url, current_timestamp):
     """Получение данных с API YP."""
-
     current_timestamp = current_timestamp or int(time.time())
     headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
@@ -95,6 +93,7 @@ def get_api_answer(url, current_timestamp):
 
 
 def extracted_from_parse_status(arg0, arg1):
+    """Функция проверки статуса"""
     code_api_msg = f'{arg0}{arg1}'
     logger.error(code_api_msg)
     raise UndocumentedStatusError(code_api_msg)
@@ -102,7 +101,6 @@ def extracted_from_parse_status(arg0, arg1):
 
 def check_response(response):
     """Функция для проверки данных передаваемых в response."""
-
     if response.get('homeworks') is None:
         code_api_msg = (
             'Ошибка ключа homeworks или response'
@@ -135,7 +133,6 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка домтупности токенов."""
-
     no_tokens_msg = (
         'Программа принудительно остановлена. '
         'Отсутствует обязательная переменная окружения:')
@@ -157,7 +154,6 @@ def check_tokens():
 
 def main():
     """Главная функция запуска бота."""
-
     if not check_tokens():
         exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
