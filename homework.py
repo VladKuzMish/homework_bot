@@ -5,9 +5,9 @@ import os
 import time
 
 import requests
-import telegram 
+import telegram
 
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
 
 load_dotenv()
@@ -30,8 +30,8 @@ HOMEWORK_STATUSES = {
 # Здесь задана глобальная конфигурация для логирования
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='program.log', # Куда отправляются записи
-    filemode='w', # Литер W говорит о том, что содержимое перезаписывается при каждом запуске программы
+    filename='program.log',
+    filemode='w',
     format='%(asctime)s - %(levelname)s - %(message)s - %(name)s'
 )
 # Это имя будет передаваться в логи, в аргумент %(name)
@@ -57,6 +57,7 @@ class UndocumentedStatusError(Exception):
 
 class RequestExceptionError(Exception):
     """Ошибка запроса."""
+
 
 def send_message(bot, message):
     """Функция для отправки сообщения в Телеграм"""
@@ -93,6 +94,7 @@ def get_api_answer(url, current_timestamp):
         code_api_msg = f'Код ответа API (ValueError): {value_error}'
         logger.error(code_api_msg)
         raise json.JSONDecodeError(code_api_msg) from value_error
+
 
 def extracted_from_parse_status(arg0, arg1):
     code_api_msg = f'{arg0}{arg1}'
@@ -186,6 +188,7 @@ def main():
                 send_message(bot, message)
             logger.critical(message)
             time.sleep(RETRY_TIME)
+
 
 if __name__ == '__main__':
     main()
