@@ -70,14 +70,17 @@ def send_message(bot, message):
 
 def get_api_answer(url, current_timestamp):
     """Получение данных с API YP."""
-    current_timestamp = current_timestamp or int(time.time())
-    headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-    payload = {'from_date': current_timestamp}
+    params = {'from_date': current_timestamp}
     try:
-        response = requests.get(url, headers=headers, params=payload)
+        logging.info('Отправляю запрос к API ЯндексПрактикума')
+        response = requests.get(
+            ENDPOINT,
+            headers=HEADERS,
+            params=params,
+        )
         if response.status_code != 200:
             code_api_msg = (
-                f'Эндпоинт {url} недоступен.'
+                f'Эндпоинт недоступен.'
                 f' Код ответа API: {response.status_code}')
             logger.error(code_api_msg)
             raise TheAnswerIsNot200Error(code_api_msg)
