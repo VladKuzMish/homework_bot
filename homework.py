@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import requests
@@ -9,7 +10,7 @@ import logging
 from dotenv import load_dotenv
 from http import HTTPStatus
 
-from exceptions import NotTokenException, NotStatusOkException
+from exceptions import NotStatusOkException
 
 load_dotenv()
 
@@ -21,9 +22,9 @@ RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 HOMEWORK_VERDICTS = {
-    'approved': 'Работа проверена: Ты справился, юный падаван !',
-    'reviewing': 'Работа взята на проверку.',
-    'rejected': 'Работа проверена: ты не туда воевал, переделывай.'
+    'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
+    'reviewing': 'Работа взята на проверку ревьюером.',
+    'rejected': 'Работа проверена: у ревьюера есть замечания.',
 }
 
 
@@ -55,6 +56,9 @@ def get_api_answer(current_timestamp):
     except ConnectionError:
         logging.error('Сбой при запросе к эндпоинту')
         raise ConnectionError('Сбой при запросе к эндпоинту')
+    except json.JSONDecodeError:
+        logging.error('Ошибка при преобразовании')
+        raise json.JSONDecodeError('Ошибка при преобразовании')
 
 
 def check_response(response):
@@ -62,14 +66,14 @@ def check_response(response):
     if not isinstance(response, dict):
         logging.error('API передал не словарь')
         raise TypeError('API передал не словарь')
-    homeworks = response.get('homeworks')
-    if homeworks is None:
+    homework = response.get('homeworks')
+    if homework is None:
         logging.error('API не содержит ключа homeworks')
         raise KeyError('API не содержит ключа homeworks')
-    if not isinstance(homeworks, list):
+    if not isinstance(homework, list):
         logging.error('Содержимое не список')
         raise TypeError('Содержимое не список')
-    return homeworks
+    return homework
 
 
 def parse_status(homework):
@@ -100,12 +104,12 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
-    all([
+    flag = all([
         PRACTICUM_TOKEN is not None,
         TELEGRAM_TOKEN is not None,
         TELEGRAM_CHAT_ID is not None
     ])
-    return all
+    return flag
 
 
 def main():
@@ -120,17 +124,8 @@ def main():
         ),
         handlers=[logging.StreamHandler(sys.stdout)]
     )
-    if check_tokens():
-        logging.info('Токены впорядке')
-    else:
-        logging.critical(
-            'Не обнаружен один из ключей PRACTICUM_TOKEN,'
-            'TELEGRAM_TOKEN, TELEGRAM_CHAT_ID'
-        )
-        raise NotTokenException(
-            'Не обнаружен один из ключей PRACTICUM_TOKEN,'
-            'TELEGRAM_TOKEN, TELEGRAM_CHAT_ID'
-        )
+    if not check_tokens():
+        exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     now = datetime.datetime.now()
     send_message(
