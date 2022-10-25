@@ -1,4 +1,4 @@
-"""import datetime
+import datetime
 import json
 import logging
 import os
@@ -42,7 +42,7 @@ logger.addHandler(
 
 
 class TheAnswerIsNot200Error(Exception):
-    ""Ответ сервера не равен 200."""
+    """Ответ сервера не равен 200."""
 
 
 class EmptyDictionaryOrListError(Exception):
@@ -189,4 +189,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
