@@ -3,7 +3,6 @@ import os
 import time
 import requests
 import sys
-import datetime
 
 import telegram
 import logging
@@ -66,10 +65,11 @@ def check_response(response):
     if not isinstance(response, dict):
         logging.error('API передал не словарь')
         raise TypeError('API передал не словарь')
+    if response.get('homeworks') is None:
+        logging.error('Ошибка ключа homeworks или response')
+    if response['homeworks'] == []:
+        return {}
     homework = response.get('homeworks')
-    if homework is None:
-        logging.error('API не содержит ключа homeworks')
-        raise KeyError('API не содержит ключа homeworks')
     if not isinstance(homework, list):
         logging.error('Содержимое не список')
         raise TypeError('Содержимое не список')
@@ -104,18 +104,17 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
-    flag = all([
-        PRACTICUM_TOKEN is not None,
-        TELEGRAM_TOKEN is not None,
-        TELEGRAM_CHAT_ID is not None
+    all([
+        PRACTICUM_TOKEN,
+        TELEGRAM_TOKEN,
+        TELEGRAM_CHAT_ID,
     ])
-    return flag
+    return all
 
 
 def main():
     """Основная логика работы бота."""
-    date_api_memory = None
-    error_memory = None
+    error_memory = ('')
     logging.basicConfig(
         level=logging.INFO,
         format=(
@@ -127,33 +126,25 @@ def main():
     if not check_tokens():
         exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    now = datetime.datetime.now()
-    send_message(
-        bot,
-        f'Я начал свою работу: {now.strftime("%d-%m-%Y %H:%M")}')
     current_timestamp = int(time.time())
+    tmp_status = 'reviewing'
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            homeworks = check_response(response)
-            flag_message = 'Статус работы не изменился'
-            if homeworks:
-                message = parse_status(homeworks[0])
-                date_updated = parse_date(homeworks[0])
-                if str(date_updated) != str(date_api_memory):
-                    date_api_memory = date_updated
-                    flag_message = 'Статус работы изменился!!!'
-                    send_message(bot, message)
-            logging.info(flag_message)
-            current_timestamp = int(time.time())
-            error_memory = None
+            homework = check_response(response)
+            if homework and tmp_status != homework['status']:
+                message = parse_status(homework)
+                send_message(bot, message)
+                tmp_status = homework['status']
+            logging.info(
+                'Изменений нет, ждем 10 минут и проверяем API')
+            time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
             if str(error) != str(error_memory):
                 error_memory = error
                 send_message(bot, message)
-            current_timestamp = int(time.time())
         finally:
             time.sleep(RETRY_TIME)
 
