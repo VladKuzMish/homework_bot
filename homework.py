@@ -105,9 +105,9 @@ def parse_date(homework):
 def check_tokens():
     """Проверяет наличие токенов."""
     all([
-        PRACTICUM_TOKEN,
-        TELEGRAM_TOKEN,
-        TELEGRAM_CHAT_ID,
+        PRACTICUM_TOKEN is not None,
+        TELEGRAM_TOKEN is not None,
+        TELEGRAM_CHAT_ID is not None,
     ])
     return all
 
