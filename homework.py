@@ -104,12 +104,23 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
-    all([
-        PRACTICUM_TOKEN is not None,
-        TELEGRAM_TOKEN is not None,
-        TELEGRAM_CHAT_ID is not None,
-    ])
-    return all
+    no_tokens_msg = (
+        'Программа принудительно остановлена. '
+        'Отсутствует обязательная переменная окружения:')
+    tokens_bool = True
+    if PRACTICUM_TOKEN is None:
+        tokens_bool = False
+        logging.critical(
+            f'{no_tokens_msg} PRACTICUM_TOKEN')
+    if TELEGRAM_TOKEN is None:
+        tokens_bool = False
+        logging.critical(
+            f'{no_tokens_msg} TELEGRAM_TOKEN')
+    if TELEGRAM_CHAT_ID is None:
+        tokens_bool = False
+        logging.critical(
+            f'{no_tokens_msg} TELEGRAM_CHAT_ID')
+    return tokens_bool
 
 
 def main():
