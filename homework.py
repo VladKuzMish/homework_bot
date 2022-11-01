@@ -78,11 +78,11 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает статус работы из ответа ЯндексПракутикум."""
     homework_name = homework.get('homework_name')
-    if homework_name('homework_name'):
+    if homework_name.get('homework_name') is None:
         logging.error('В ответе API нет ключа homework_name')
         raise KeyError('В ответе API нет ключа homework_name')
     homework_status = homework.get('status')
-    if homework_status('status') is None:
+    if homework_status.get('status') is None:
         logging.error('В ответе API нет ключа homework_status')
         raise KeyError('В ответе API нет ключа homework_status')
     verdict = HOMEWORK_VERDICTS.get(homework_status)
@@ -113,7 +113,6 @@ def check_tokens():
             tokens_bool = True
             logging.critical({no_tokens_msg})
         return tokens_bool
-    return i
 
 
 def main():
