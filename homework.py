@@ -67,8 +67,7 @@ def check_response(response):
         raise TypeError('API передал не словарь')
     if response.get('homeworks') is None:
         logging.error('Ошибка ключа homeworks или response')
-    if response['homeworks'] == []:
-        return {}
+        raise TypeError('Ошибка ключа homeworks или response')
     homework = response.get('homeworks')
     if not isinstance(homework, list):
         logging.error('Содержимое не список')
@@ -79,11 +78,11 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает статус работы из ответа ЯндексПракутикум."""
     homework_name = homework.get('homework_name')
-    if homework_name is None:
+    if homework_name('homework_name') is None:
         logging.error('В ответе API нет ключа homework_name')
         raise KeyError('В ответе API нет ключа homework_name')
     homework_status = homework.get('status')
-    if homework_status is None:
+    if homework_status('status') is None:
         logging.error('В ответе API нет ключа homework_status')
         raise KeyError('В ответе API нет ключа homework_status')
     verdict = HOMEWORK_VERDICTS.get(homework_status)
@@ -104,23 +103,16 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
+    tocens_list = [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]
     no_tokens_msg = (
         'Программа принудительно остановлена. '
         'Отсутствует обязательная переменная окружения:')
     tokens_bool = True
-    if PRACTICUM_TOKEN is None:
-        tokens_bool = False
-        logging.critical(
-            f'{no_tokens_msg} PRACTICUM_TOKEN')
-    if TELEGRAM_TOKEN is None:
-        tokens_bool = False
-        logging.critical(
-            f'{no_tokens_msg} TELEGRAM_TOKEN')
-    if TELEGRAM_CHAT_ID is None:
-        tokens_bool = False
-        logging.critical(
-            f'{no_tokens_msg} TELEGRAM_CHAT_ID')
-    return tokens_bool
+    for i in tocens_list:
+        if i is None:
+            tokens_bool = True
+            logging.critical({no_tokens_msg})
+        return tokens_bool
 
 
 def main():
