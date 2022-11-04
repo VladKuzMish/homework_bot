@@ -9,7 +9,7 @@ import logging
 from dotenv import load_dotenv
 from http import HTTPStatus
 
-from exceptions import NotStatusOkException
+from exceptions import NotStatusOkException, SendMessageError
 
 load_dotenv()
 
@@ -36,6 +36,7 @@ def send_message(bot, message):
     except Exception as error:
         logging.error(
             f'Сообщение в Telegram не отправлено: {error}')
+        raise SendMessageError('Сообщение не в телеграмм не отправилось')
 
 
 def get_api_answer(current_timestamp):
@@ -77,14 +78,14 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает статус работы из ответа ЯндексПракутикум."""
-    homework_name = homework.get('homework_name')
     if 'homework_name' not in homework:
         logging.error('В ответе API нет ключа homework_name')
         raise KeyError('В ответе API нет ключа homework_name')
-    homework_status = homework.get('status')
+    homework_name = homework.get('homework_name')
     if 'status' not in homework:
         logging.error('В ответе API нет ключа homework_status')
         raise KeyError('В ответе API нет ключа homework_status')
+    homework_status = homework.get('status')
     verdict = HOMEWORK_VERDICTS.get(homework_status)
     if verdict is None:
         logging.error('Неизвестный статус')
@@ -103,14 +104,13 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
-    if not all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
-        return False
+    all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
     return True
 
 
 def main():
     """Основная логика работы бота."""
-    error_memory = ('')
+    error_memory = ''
     logging.basicConfig(
         level=logging.INFO,
         format=(
@@ -123,24 +123,22 @@ def main():
         exit()
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    tmp_status = 'reviewing'
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
-            if homework and tmp_status != homework['status']:
-                message = parse_status(homework)
-                send_message(bot, message)
-                tmp_status = homework['status']
+            message = parse_status(homework)
+            send_message(bot, message)
             logging.info(
                 'Изменений нет, ждем 10 минут и проверяем API')
-            time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
             if str(error) != str(error_memory):
                 error_memory = error
                 send_message(bot, message)
+            else:
+                raise SendMessageError('Ошибка отправки сообщения в телеграмм.')
         finally:
             time.sleep(RETRY_TIME)
 
