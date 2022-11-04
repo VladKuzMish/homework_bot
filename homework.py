@@ -138,7 +138,9 @@ def main():
                 error_memory = error
                 send_message(bot, message)
             else:
-                raise SendMessageError('Ошибка отправки сообщения в телеграмм.')
+                raise SendMessageError(
+                    'Ошибка отправки сообщения в телеграмм.'
+                )
         finally:
             time.sleep(RETRY_TIME)
 
