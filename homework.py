@@ -132,7 +132,7 @@ def main():
             send_message(bot, message)
             logging.info(
                 'Изменений нет, ждем 10 минут и проверяем API')
-        except Exception as error:
+        except SendMessageError as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
             if str(error) != str(error_memory):
