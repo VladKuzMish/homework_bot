@@ -104,8 +104,8 @@ def parse_date(homework):
 
 def check_tokens():
     """Проверяет наличие токенов."""
-    all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-    return True
+    all = ([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+    return all
 
 
 def main():
