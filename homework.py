@@ -93,20 +93,9 @@ def parse_status(homework):
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
-def parse_date(homework):
-    """Извлекает дату обновления работы из ответа ЯндексПракутикум."""
-    date_updated = homework.get('date_updated')
-    if date_updated is None:
-        logging.error('В ответе API нет ключа date_updated')
-        raise KeyError('В ответе API нет ключа date_updated')
-    return date_updated
-
-
 def check_tokens():
     """Проверяет наличие токенов."""
-    if not all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
-        return False
-    return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
@@ -132,16 +121,17 @@ def main():
             send_message(bot, message)
             logging.info(
                 'Изменений нет, ждем 10 минут и проверяем API')
-        except SendMessageError as error:
+            time.current_timestamp(RETRY_TIME)
+        except SendMessageError:
+            raise SendMessageError(
+                'Ошибка отправки сообщения в телеграмм.'
+            )
+        except Exception as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(message)
             if str(error) != str(error_memory):
                 error_memory = error
                 send_message(bot, message)
-            else:
-                raise SendMessageError(
-                    'Ошибка отправки сообщения в телеграмм.'
-                )
         finally:
             time.sleep(RETRY_TIME)
 
